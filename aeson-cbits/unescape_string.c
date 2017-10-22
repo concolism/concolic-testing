@@ -157,7 +157,6 @@ int main(void) {
   size_t ofs = 0;
 
   klee_make_symbolic(s, sizeof s, "s");
-  klee_assume(s[SIZE-1] == '\0');
 
   _js_decode_string(d, &ofs, s, s+SIZE);
 
