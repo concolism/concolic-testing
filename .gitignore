@@ -1,2 +1,5 @@
 *.bc
-klee-*
+klee-last
+klee-out-*
+
+klee
