@@ -151,9 +151,15 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
 
 #define SIZE 7
 
+#ifdef BUG_DEST_TOO_SMALL
+#define DSIZE 2
+#else
+#define DSIZE SIZE
+#endif
+
 int main(void) {
   uint8_t s[SIZE];
-  uint16_t d[SIZE];
+  uint16_t d[DSIZE];
   size_t ofs = 0;
 
   klee_make_symbolic(s, sizeof s, "s");
