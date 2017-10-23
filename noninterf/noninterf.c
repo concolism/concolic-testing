@@ -142,12 +142,14 @@ int main() {
   klee_make_symbolic(&stack, sizeof stack, "stack");
   klee_make_symbolic(&insns, sizeof insns, "insns");
 
-  klee_assume(machine.pc >= 0);
-  klee_assume(machine.sp >= 0);
+  // Why can't we use &&
+  klee_assume(0 <= machine.pc);
+  klee_assume(machine.pc < PRG_LENGTH);
+  klee_assume(0 <= machine.sp);
+  klee_assume(machine.sp < STK_LENGTH);
   klee_assume(machine.memory == memory);
   klee_assume(machine.stack == stack);
   klee_assume(machine.insns == insns);
-
 
   for (int i = 0 ; i < machine.sp && i < STK_LENGTH ; i++) {
     klee_assume(machine.stack[i].value >= 0);
