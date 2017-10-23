@@ -1,5 +1,7 @@
 ARTIFACT=noninterf
 
-$(ARTIFACT).bc:
+TARGET:=$(ARTIFACT)
+
+$(TARGET).bc:
 
 include ../common.mk
