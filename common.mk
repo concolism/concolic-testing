@@ -6,7 +6,7 @@ $(TARGET).bc: $(ARTIFACT).c
 	$(CC) $(CCOPTS) $(BUGS) $< -o $@
 
 klee: $(ARTIFACT).bc
-	$(KLEE) -only-output-states-covering-new --timeout 60 $<
+	$(KLEE) -only-output-states-covering-new -max-time 60 $<
 
 clean:
 	rm -f *.bc
