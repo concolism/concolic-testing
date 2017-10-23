@@ -163,6 +163,9 @@ int main(void) {
   size_t ofs = 0;
 
   klee_make_symbolic(s, sizeof s, "s");
+  // klee_assume(s[0] == 'a');
+  // klee_assume(s[1] == 'b');
+  // klee_assume(s[2] == 'c');
 
   _js_decode_string(d, &ofs, s, s+SIZE);
 
