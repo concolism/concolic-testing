@@ -7,9 +7,13 @@ with:
 - `klee/bin/`: `klee` executables
 - `klee/include/`: `klee` headers
 
-    mkdir klee/
-    ln -s /path/to/klee/include klee/include
-    ln -s /path/to/klee/build/bin klee/bin
+A typical sequence of commands to get to a working setup:
+
+```
+mkdir klee/
+ln -s /path/to/klee/include klee/include
+ln -s /path/to/klee/build/bin klee/bin
+```
 
 In each directory,
 
