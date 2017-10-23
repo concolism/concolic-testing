@@ -1,5 +1,5 @@
 CC=clang
-CCOPTS=-g -c -emit-llvm -I../klee/include
+CCOPTS=-Wall -g -c -emit-llvm -I../klee/include
 KLEE=../klee/bin/klee
 
 $(TARGET).bc: $(ARTIFACT).c
