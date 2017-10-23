@@ -1,14 +1,17 @@
 Experiments in concolic testing with Klee
 =========================================
 
-Scripts will assume that `klee` is in the root of this directory
-and that `klee`'s include headers are in `../klee/include/`.
+Scripts will assume that the root of this directory contains a `klee/` folder
+with:
 
-    ln -s path/to/klee klee
+- `klee/bin/`: `klee` executables
+- `klee/include/`: `klee` headers
 
-Otherwise copy scripts before making changes to avoid checking them in git
+    mkdir klee/
+    ln -s /path/to/klee/include klee/include
+    ln -s /path/to/klee/build/bin klee/bin
 
-    cp aeson-cbits/build{-script,}.sh
-    cp aeson-cbits/run-klee{-script,}.sh
+In each directory,
 
-    # edit aeson-cbits/build.sh and aeson-cbits/run-klee.sh to customize paths
+- `make` builds the files;
+- `make klee` starts testing.
