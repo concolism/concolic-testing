@@ -5,7 +5,7 @@ KLEE=../klee/bin/klee
 $(TARGET).bc: $(ARTIFACT).c
 	$(CC) $(CCOPTS) $(BUGS) $< -o $@
 
-klee: $(ARTIFACT).bc
+klee: $(TARGET).bc
 	$(KLEE) -only-output-states-covering-new -max-time 60 $<
 
 clean:
