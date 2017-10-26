@@ -1,4 +1,7 @@
 *.bc
+*.c-prepro
+*.replay
+
 klee-last
 klee-out-*
 
