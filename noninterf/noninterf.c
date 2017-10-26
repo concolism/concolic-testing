@@ -1,4 +1,9 @@
 #include <klee/klee.h>
+#include <limits.h>
+
+#ifdef REPLAY
+#include <stdio.h>
+#endif
 
 #define MEM_LENGTH 5
 #define STK_LENGTH 10
@@ -45,6 +50,62 @@ struct Machine {
   Insn *insns;
 };
 typedef struct Machine Machine;
+
+#ifdef REPLAY
+void print_machine(Machine *machine) {
+  printf("PC: %d\tSP: %d\n", machine->pc, machine->sp);
+  printf("STK: ");
+  for (int i = 0; i < machine->sp; i++) {
+    printf("%d%c",
+        machine->stack[i].value,
+        machine->stack[i].tag == L ? 'L' : 'H');
+    if (i < machine->sp-1)
+      printf("\t");
+  }
+  printf("\n");
+  printf("MEM: ");
+  for (int i = 0; i < MEM_LENGTH; i++) {
+    printf("%d%c",
+        machine->memory[i].value,
+        machine->memory[i].tag == L ? 'L' : 'H');
+    if (i < MEM_LENGTH-1)
+      printf("\t");
+  }
+  printf("\n");
+  printf("PRG: ");
+  for (int i = 0; i < PRG_LENGTH; i++) {
+    Atom immediate;
+    switch (machine->insns[i].t) {
+      case NOOP:
+        printf("NOOP");
+        break;
+      case PUSH:
+        immediate = machine->insns[i].immediate;
+        printf("PUSH(%d%c)", immediate.value, immediate.tag == L ? 'L' : 'H');
+        break;
+      case POP:
+        printf("POP");
+        break;
+      case LOAD:
+        printf("LOAD");
+        break;
+      case STORE:
+        printf("STORE");
+        break;
+      case ADD:
+        printf("ADD");
+        break;
+      case HALT:
+        printf("HALT");
+        break;
+    }
+    if (i == PRG_LENGTH-1)
+      printf("\n");
+    else
+      printf("\t");
+  }
+}
+#endif
 
 enum Outcome {
   STEPPED,
@@ -116,6 +177,11 @@ Outcome step(Machine *machine) {
 #endif
       Atom data1 = machine->stack[--machine->sp];
       Atom data2 = machine->stack[--machine->sp];
+#ifndef BUG_ADD_INT_OVERFLOW
+      if (data1.value > INT_MAX - data2.value) {
+        return ERRORED;
+      }
+#endif
 #ifdef BUG_ADD_TAG
       Atom data3 = {L, data1.value + data2.value};
 #else
@@ -199,13 +265,13 @@ void copy_machine(Machine* from, Machine *to) {
 }
 
 int main() {
-  Machine machine1, machine1_, machine2, machine2_;
+  Machine machine1, machine1_, machine2;
   MemAtom
     memory1[MEM_LENGTH], memory1_[MEM_LENGTH],
-    memory2[MEM_LENGTH], memory2_[MEM_LENGTH];
+    memory2[MEM_LENGTH];
   StkAtom
     stack1[STK_LENGTH], stack1_[STK_LENGTH],
-    stack2[STK_LENGTH], stack2_[STK_LENGTH];
+    stack2[STK_LENGTH];
   Insn insns1[PRG_LENGTH], insns2[PRG_LENGTH];
 
   klee_make_symbolic(&machine1, sizeof machine1, "machine1");
@@ -217,6 +283,20 @@ int main() {
   klee_make_symbolic(&memory2, sizeof memory2, "memory2");
   klee_make_symbolic(&stack2, sizeof stack2, "stack2");
   klee_make_symbolic(&insns2, sizeof insns2, "insns2");
+
+#ifdef REPLAY
+  machine1.memory = memory1;
+  machine1.stack = stack1;
+  machine1.insns = insns1;
+
+  print_machine(&machine1);
+
+  machine2.memory = memory2;
+  machine2.stack = stack2;
+  machine2.insns = insns2;
+
+  print_machine(&machine2);
+#endif
 
   klee_assume(machine1.pc == 0);
   klee_assume(machine1.memory == memory1);
@@ -238,12 +318,12 @@ int main() {
   // machine2_.stack = stack2_;
   // machine2_.insns = insns2;
 
-  if (run(&machine1_) == ERRORED) {
+  if (run(&machine1) == ERRORED) {
     klee_silent_exit(0);
   }
 
   assume_valid_machine(&machine2);
-  if (!indist_machine(&machine1, &machine2)) {
+  if (!indist_machine(&machine1_, &machine2)) {
     klee_silent_exit(0);
   }
 
