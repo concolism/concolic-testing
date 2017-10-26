@@ -42,3 +42,18 @@ make DEST_TOO_LONG=true klee
 ### Misc commands
 
 - `make cpp` just preprocesses the files (for sanity checks).
+
+### Reminders
+
+To use STP, [Klee docs](https://klee.github.io/build-stp/) remind you to apply this.
+
+```
+ulimit -s unlimited
+```
+
+To replay tests, add `libKleeRuntest` to the `LD_LIBRARY_PATH`, and set `KTEST_FILE` to
+a `.ktest` file.
+
+```
+LD_LIBRARY_PATH=../klee/lib KTEST_FILE=klee-last/test000001.ktest ./noninterf.replay
+```
