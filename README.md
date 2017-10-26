@@ -26,8 +26,10 @@ older versions though.
 
 In each directory,
 
-- `make` builds the program for Klee;
-- `make klee` starts testing;
+- `make` builds the program for Klee.
+- `make klee` starts testing:
+  + `TIMEOUT=N` to set a time limit of N seconds (default: `60`);
+  + `NOLIMIT` to disable timeouts.
 - `make replay` builds an executable to replay test cases.
 
 These examples have various buggy versions.
