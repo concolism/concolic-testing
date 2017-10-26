@@ -2,6 +2,6 @@ ARTIFACT=noninterf
 
 TARGET:=$(ARTIFACT)
 
-$(TARGET).bc:
+build:
 
 include ../common.mk

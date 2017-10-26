@@ -7,6 +7,6 @@ BUGS+=-DBUG_DEST_TOO_SMALL
 TARGET:=$(TARGET).DTL
 endif
 
-$(TARGET).bc:
+build:
 
 include ../common.mk

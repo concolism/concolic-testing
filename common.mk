@@ -1,12 +1,26 @@
 CC=clang
-CCOPTS=-Wall -g -c -emit-llvm -I../klee/include
 KLEE=../klee/bin/klee
+KLEE_LIB=../klee/lib
+CCOPTS=-Wall -I../klee/include
+CCBUILDOPTS=-g -c -emit-llvm
+
+build: $(TARGET).bc
+replay: $(TARGET).replay
+cpp: $(TARGET).c-prepro
 
 $(TARGET).bc: $(ARTIFACT).c
-	$(CC) $(CCOPTS) $(BUGS) $< -o $@
+	$(CC) $(CCOPTS) $(CCBUILDOPTS) $(BUGS) $< -o $@
+
+$(TARGET).c-prepro: $(ARTIFACT).c
+	$(CC) $(CCOPTS) -E $(BUGS) $< -o $@
+
+$(TARGET).replay: $(ARTIFACT).c
+	$(CC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
 
 klee: $(TARGET).bc
 	$(KLEE) -only-output-states-covering-new -max-time 60 $<
 
 clean:
-	rm -f *.bc
+	rm -f *.bc *.c-prepro *.replay
+
+.PHONY: clean build cpp klee
