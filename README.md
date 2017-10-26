@@ -1,6 +1,25 @@
 Experiments in concolic testing with Klee
 =========================================
 
+## Parsing JSON strings (`aeson-cbits`)
+
+A function originally from
+[*json-strings*](https://hackage.haskell.org/package/json-stream), a Haskell
+library for JSON. Some concerns have been raised about the current lack of
+safety guarantees
+(for instance, see
+[this issue in *aeson*](https://github.com/bos/aeson/issues/535)).
+
+## Testing noninterference, quickly (`noninterf`)
+
+A port of an experiment in random testing for noninterference properties of a
+small family of abstract machines. (In ICFP 2013, also on
+[arxiv](https://arxiv.org/abs/1409.0393?context=cs.PL)).
+
+---
+
+# Build information
+
 ## Initial setup
 
 Scripts will assume that the root of this directory contains a `klee/` folder
@@ -26,14 +45,14 @@ older versions though.
 
 In each directory,
 
-- `make` builds the program for Klee.
-- `make klee` starts testing:
+- `make klee` to launch Klee:
   + `TIMEOUT=N` to set a time limit of N seconds (default: `60`);
   + `NOLIMIT` to disable timeouts.
+- `make` just builds the program for Klee (implied by `make klee`).
 - `make replay` builds an executable to replay test cases.
 
 These examples have various buggy versions.
-See `Makefile` in each directory for options.
+See `Makefile` in each directory for corresponding options.
 
 For example, in `aeson-cbits`, this enables the `BUG_DEST_TOO_LONG`.
 
@@ -48,6 +67,7 @@ make DEST_TOO_LONG=true klee
 ### Reminders
 
 To use STP, [Klee docs](https://klee.github.io/build-stp/) remind you to apply this.
+(In some environments, STP may segfault without it.)
 
 ```
 ulimit -s unlimited
