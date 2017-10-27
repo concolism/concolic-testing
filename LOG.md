@@ -53,6 +53,13 @@ behavior) causes the apparition of a negative number, which results in an
 unchecked out-of-bounds access to memory. The fix was to handle integer
 overflow as an error.
 
+We note that the error was only detected in a subsequent
+memory operation: it was not found when testing a single step.
+One possible though minor improvement may be for Klee to catch this
+undefined behavior as soon as it happens. (Does LLVM, the level at which
+Klee operates, preserve enough of these (non-)semantics for that to be
+possible?)
+
 Coverage stagnates at 56%, which sounds low, though more investigation is
 necessary to interpret this number accurately.
 
