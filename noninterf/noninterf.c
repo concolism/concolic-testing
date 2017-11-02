@@ -331,7 +331,7 @@ int main() {
     klee_silent_exit(0);
   }
 
-  if (!indist_machine(&machine1_, &machine2)) {
+  if (!indist_machine(&machine1, &machine2)) {
     klee_abort();
   }
 
