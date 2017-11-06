@@ -202,6 +202,8 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
 
 #ifdef BUG_DEST_TOO_SMALL
 #define DSIZE 2
+#elif BUG_DEST_TOO_SMALL_BIS
+#define DSIZE (SIZE-1)
 #else
 #define DSIZE SIZE
 #endif
