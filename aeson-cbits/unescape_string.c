@@ -91,9 +91,12 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
 
         if (codepoint == '\\')
           DISPATCH_ASCII(backslash)
-        else if (codepoint <= 0xffff)
+        else if (codepoint <= 0xffff) {
+#ifdef COVER_LOW_CODEPOINT
+          klee_abort();
+#endif
           *d++ = (uint16_t) codepoint;
-        else {
+        } else {
           *d++ = (uint16_t) (0xD7C0 + (codepoint >> 10));
           *d++ = (uint16_t) (0xDC00 + (codepoint & 0x3FF));
         }

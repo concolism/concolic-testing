@@ -32,6 +32,11 @@ BUGS+=-DCOVER_EXIT
 TARGET:=$(TARGET).CE
 endif
 
+ifdef LOW_CODEPOINT
+BUGS+=-DCOVER_LOW_CODEPOINT
+TARGET:=$(TARGET).LC
+endif
+
 build:
 
 include ../common.mk
