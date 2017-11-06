@@ -1,8 +1,10 @@
 CC=clang
+GCC=gcc
 KLEE=../klee/bin/klee
 KLEE_LIB=../klee/lib
 CCOPTS=-Wall -I../klee/include
 CCBUILDOPTS=-g -c -emit-llvm
+GCCCOVOPTS=-fprofile-arcs -ftest-coverage
 
 build: $(TARGET).bc
 replay: $(TARGET).replay
@@ -23,12 +25,21 @@ $(TARGET).c-prepro: $(ARTIFACT).c
 	$(CC) $(CCOPTS) -E $(BUGS) $< -o $@
 
 $(TARGET).replay: $(ARTIFACT).c
-	$(CC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
+	$(GCC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
+
+$(TARGET).replay-c: $(ARTIFACT).c
+	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
 
 klee: $(TARGET).bc
 	$(KLEE) -only-output-states-covering-new $(TIMEOUT_OPT) $<
 
-clean:
-	rm -f *.bc *.c-prepro *.replay
+coverage: $(TARGET).replay-c
+	@test $(KLEE_OUT) || (echo "make coverage: KLEE_OUT is undefined" ; exit 1)
+	rm -f *.gcda
+	for t in $(KLEE_OUT)/*.ktest ; do LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$$t ./$< ; done
+	gcov $(TARGET).c
 
-.PHONY: clean build cpp klee
+clean:
+	rm -f *.bc *.c-prepro *.replay *.replay-c *.gcov *.gcda *.gcno
+
+.PHONY: clean build cpp coverage klee

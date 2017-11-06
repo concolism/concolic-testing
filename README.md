@@ -48,14 +48,18 @@ In each directory,
 - `make klee` to launch Klee:
   + `TIMEOUT=N` to set a time limit of N seconds (default: `60`);
   + `NOLIMIT` to disable timeouts.
-- `make replay` builds an executable to replay test cases.
 
-  To replay tests with the `*.replay` executable, add `libKleeRuntest` to the
+- `make replay` builds an executable (`*.replay`) to replay test cases.
+
+  To run `*.replay`, add `libKleeRuntest` to the
   `LD_LIBRARY_PATH`, and set `KTEST_FILE` to a `.ktest` file.
 
   ```
   LD_LIBRARY_PATH=../klee/lib KTEST_FILE=klee-last/test000001.ktest ./noninterf.replay
   ```
+
+- `make coverage KLEE_OUT=klee-out-*` collects coverage information in `*.c.gcov`
+  (where `klee-out-*` corresponds to a directory created by `make klee`)
 
 These examples have various buggy versions.
 See `Makefile` in each directory for corresponding options.
