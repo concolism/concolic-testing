@@ -28,7 +28,7 @@ $(TARGET).replay: $(ARTIFACT).c
 	$(GCC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
 
 $(TARGET).replay-c: $(ARTIFACT).c
-	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
+	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DCOVERAGE $(BUGS) $< -o $@ -lkleeRuntest
 
 klee: $(TARGET).bc
 	$(KLEE) -only-output-states-covering-new $(TIMEOUT_OPT) $<
@@ -36,7 +36,9 @@ klee: $(TARGET).bc
 coverage: $(TARGET).replay-c
 	@test $(KLEE_OUT) || (echo "make coverage: KLEE_OUT is undefined" ; exit 1)
 	rm -f *.gcda
-	for t in $(KLEE_OUT)/*.ktest ; do LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$$t ./$< ; done
+	for t in $(KLEE_OUT)/*.ktest ; do \
+	  LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$$t ./$< ; \
+	done
 	gcov $(TARGET).c
 
 clean:

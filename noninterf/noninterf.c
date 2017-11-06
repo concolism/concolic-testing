@@ -284,17 +284,18 @@ int main() {
   klee_make_symbolic(&stack2, sizeof stack2, "stack2");
   klee_make_symbolic(&insns2, sizeof insns2, "insns2");
 
-#ifdef REPLAY
+#if defined(REPLAY) || defined(COVERAGE)
   machine1.memory = memory1;
   machine1.stack = stack1;
   machine1.insns = insns1;
 
-  print_machine(&machine1);
-
   machine2.memory = memory2;
   machine2.stack = stack2;
   machine2.insns = insns2;
+#endif
 
+#ifdef REPLAY
+  print_machine(&machine1);
   print_machine(&machine2);
 #endif
 
