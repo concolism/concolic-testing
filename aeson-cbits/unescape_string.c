@@ -98,6 +98,9 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
           *d++ = (uint16_t) (0xDC00 + (codepoint & 0x3FF));
         }
     }
+#ifdef COVER_EXIT
+    klee_abort();
+#endif
     *destoff = d - dest;
     // Exit point
     return (state != UTF8_ACCEPT);

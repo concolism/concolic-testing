@@ -27,6 +27,11 @@ BUGS+=-DCOVER_BACKSLASH
 TARGET:=$(TARGET).CB
 endif
 
+ifdef COVER_EXIT
+BUGS+=-DCOVER_EXIT
+TARGET:=$(TARGET).CE
+endif
+
 build:
 
 include ../common.mk
