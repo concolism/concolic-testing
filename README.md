@@ -48,8 +48,14 @@ In each directory,
 - `make klee` to launch Klee:
   + `TIMEOUT=N` to set a time limit of N seconds (default: `60`);
   + `NOLIMIT` to disable timeouts.
-- `make` just builds the program for Klee (implied by `make klee`).
 - `make replay` builds an executable to replay test cases.
+
+  To replay tests with the `*.replay` executable, add `libKleeRuntest` to the
+  `LD_LIBRARY_PATH`, and set `KTEST_FILE` to a `.ktest` file.
+
+  ```
+  LD_LIBRARY_PATH=../klee/lib KTEST_FILE=klee-last/test000001.ktest ./noninterf.replay
+  ```
 
 These examples have various buggy versions.
 See `Makefile` in each directory for corresponding options.
@@ -62,6 +68,7 @@ make DEST_TOO_LONG=true klee
 
 ### Misc commands
 
+- `make` just builds the program for Klee (implied by `make klee`).
 - `make cpp` just preprocesses the files (for sanity checks).
 
 ### Reminders
@@ -73,9 +80,3 @@ To use STP, [Klee docs](https://klee.github.io/build-stp/) remind you to apply t
 ulimit -s unlimited
 ```
 
-To replay tests, add `libKleeRuntest` to the `LD_LIBRARY_PATH`, and set `KTEST_FILE` to
-a `.ktest` file.
-
-```
-LD_LIBRARY_PATH=../klee/lib KTEST_FILE=klee-last/test000001.ktest ./noninterf.replay
-```
