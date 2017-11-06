@@ -1,3 +1,12 @@
+2017-11-06
+==========
+
+aeson
+-----
+
+COVER_UNICODE_SURROGATE is not reached by Klee, but every other point (outside
+of the state machine which we will most likely ignore) appears to be reached.
+
 2017-10-26
 ==========
 
