@@ -1,11 +1,29 @@
 2017-11-06
 ==========
 
+Added gcov integration. Coverage is 93.68% (of 95 Executable LOC) for
+aeson and 92.31% (of 130 ELOC) for noninterf.
+
 aeson
 -----
 
-COVER_UNICODE_SURROGATE is not reached by Klee, but every other point (outside
-of the state machine which we will most likely ignore) appears to be reached.
+Klee terminates, but misses two branches: the true branch of `if (surrogate)`
+and the block following the `surrogate2` label.
+
+Next:
+
+- Confirm that inputs to reach those branches exist.
+
+noninterf
+---------
+
+Here Klee was interrupted after one minute, so some invalid tests were written
+by Klee. 6 tests ended successfully (indistinguishable initial states
+taken to indist. final states).
+
+Next:
+
+- Run Klee for longer.
 
 2017-10-26
 ==========
