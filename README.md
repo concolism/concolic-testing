@@ -52,11 +52,14 @@ In each directory,
 - `make replay` builds an executable (`*.replay`) to replay test cases.
 
   To run `*.replay`, add `libKleeRuntest` to the
-  `LD_LIBRARY_PATH`, and set `KTEST_FILE` to a `.ktest` file.
+  `LD_LIBRARY_PATH`, and set `KTEST_FILE` to a `*.ktest` file.
 
   ```
   LD_LIBRARY_PATH=../klee/lib KTEST_FILE=klee-last/test000001.ktest ./noninterf.replay
   ```
+
+  A shorter way to do that is with
+  `make replay TEST_FILE=klee-last/test000001.ktest`.
 
 - `make coverage KLEE_OUT=klee-out-*` collects coverage information in `*.c.gcov`
   (where `klee-out-*` corresponds to a directory created by `make klee`)

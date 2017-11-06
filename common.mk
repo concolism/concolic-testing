@@ -7,7 +7,6 @@ CCBUILDOPTS=-g -c -emit-llvm
 GCCCOVOPTS=-fprofile-arcs -ftest-coverage
 
 build: $(TARGET).bc
-replay: $(TARGET).replay
 cpp: $(TARGET).c-prepro
 
 ifndef TIMEOUT
@@ -32,6 +31,11 @@ $(TARGET).replay-c: $(ARTIFACT).c
 
 klee: $(TARGET).bc
 	$(KLEE) -only-output-states-covering-new $(TIMEOUT_OPT) $<
+
+replay: $(TARGET).replay
+	@if [[ -f "$(TEST_FILE)" ]] ; then \
+	  LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$(TEST_FILE) ./$< ; \
+	fi
 
 coverage: $(TARGET).replay-c
 	@test $(KLEE_OUT) || (echo "make coverage: KLEE_OUT is undefined" ; exit 1)
