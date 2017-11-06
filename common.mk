@@ -43,7 +43,7 @@ coverage: $(TARGET).replay-c
 	for t in $(KLEE_OUT)/*.ktest ; do \
 	  LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$$t ./$< ; \
 	done
-	gcov $(TARGET).c
+	gcov $(ARTIFACT).c
 
 clean:
 	rm -f *.bc *.c-prepro *.replay *.replay-c *.gcov *.gcda *.gcno
