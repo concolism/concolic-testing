@@ -92,18 +92,12 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
         if (codepoint == '\\')
           DISPATCH_ASCII(backslash)
         else if (codepoint <= 0xffff) {
-#ifdef COVER_LOW_CODEPOINT
-          klee_abort();
-#endif
           *d++ = (uint16_t) codepoint;
         } else {
           *d++ = (uint16_t) (0xD7C0 + (codepoint >> 10));
           *d++ = (uint16_t) (0xDC00 + (codepoint & 0x3FF));
         }
     }
-#ifdef COVER_EXIT
-    klee_abort();
-#endif
     *destoff = d - dest;
     // Exit point
     return (state != UTF8_ACCEPT);
@@ -115,33 +109,18 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
         *d++ = (uint16_t) codepoint;
         goto standard;
       case 'b':
-#ifdef COVER_BACKSLASH
-        klee_abort();
-#endif
         *d++ = '\b';
         goto standard;
       case 'f':
-#ifdef COVER_BACKSLASH
-        klee_abort();
-#endif
         *d++ = '\f';
         goto standard;
       case 'n':
-#ifdef COVER_BACKSLASH
-        klee_abort();
-#endif
         *d++ = '\n';
         goto standard;
       case 'r':
-#ifdef COVER_BACKSLASH
-        klee_abort();
-#endif
         *d++ = '\r';
         goto standard;
       case 't':
-#ifdef COVER_BACKSLASH
-        klee_abort();
-#endif
         *d++ = '\t';
         goto standard;
       case 'u':
@@ -171,22 +150,13 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
     *d++ = (uint16_t) unidata;
 
     if (surrogate) {
-#ifdef COVER_UNICODE_SURROGATE
-      klee_abort();
-#endif
       if (unidata < 0xDC00 || unidata > 0xDFFF) // is not low surrogate
         return -1;
       surrogate = 0;
     } else if (unidata >= 0xD800 && unidata <= 0xDBFF ) { // is high surrogate
-#ifdef COVER_UNICODE_NO_SURROGATE
-        klee_abort();
-#endif
         surrogate = 1;
         DISPATCH_ASCII(surrogate1);
     } else if (unidata >= 0xDC00 && unidata <= 0xDFFF) { // is low surrogate
-#ifdef COVER_UNICODE_NO_SURROGATE
-        klee_abort();
-#endif
         return -1;
     }
     goto standard;
