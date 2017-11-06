@@ -11,6 +11,7 @@
 #define UTF8_ACCEPT 0
 #define UTF8_REJECT 12
 
+#ifndef ASCII_SOURCE
 static const uint8_t utf8d[] = {
   // The first part of the table maps bytes to character classes that
   // to reduce the size of the transition table and create bitmasks.
@@ -42,6 +43,7 @@ static inline uint32_t decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
   *state = utf8d[256 + *state + type];
   return *state;
 }
+#endif
 
 static inline uint16_t decode_hex(uint32_t c)
 {
@@ -75,10 +77,17 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
   standard:
     // Test end of stream
     while (s < srcend) {
+#ifdef ASCII_SOURCE
+        // Assume s is ASCII
+        // state remains constant = UTF8_ACCEPT
+        codepoint = (uint8_t) *s++;
+        if (codepoint >= 0x80) { return -1; }
+#else
         if (decode(&state, &codepoint, *s++) != UTF8_ACCEPT) {
           if (state == UTF8_REJECT) { return -1; }
           continue;
         }
+#endif
 
         if (codepoint == '\\')
           DISPATCH_ASCII(backslash)
