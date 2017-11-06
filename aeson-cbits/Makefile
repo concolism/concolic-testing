@@ -22,6 +22,11 @@ BUGS+=-DCOVER_UNICODE_NO_SURROGATE
 TARGET:=$(TARGET).UNS
 endif
 
+ifdef COVER_BACKSLASH
+BUGS+=-DCOVER_BACKSLASH
+TARGET:=$(TARGET).CB
+endif
+
 build:
 
 include ../common.mk

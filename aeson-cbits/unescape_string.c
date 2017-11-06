@@ -108,13 +108,38 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
       case '/':
         *d++ = (uint16_t) codepoint;
         goto standard;
-        break;
-      case 'b': *d++ = '\b';goto standard;
-      case 'f': *d++ = '\f';goto standard;
-      case 'n': *d++ = '\n';goto standard;
-      case 'r': *d++ = '\r';goto standard;
-      case 't': *d++ = '\t';goto standard;
-      case 'u': DISPATCH_ASCII(unicode1);;break;
+      case 'b':
+#ifdef COVER_BACKSLASH
+        klee_abort();
+#endif
+        *d++ = '\b';
+        goto standard;
+      case 'f':
+#ifdef COVER_BACKSLASH
+        klee_abort();
+#endif
+        *d++ = '\f';
+        goto standard;
+      case 'n':
+#ifdef COVER_BACKSLASH
+        klee_abort();
+#endif
+        *d++ = '\n';
+        goto standard;
+      case 'r':
+#ifdef COVER_BACKSLASH
+        klee_abort();
+#endif
+        *d++ = '\r';
+        goto standard;
+      case 't':
+#ifdef COVER_BACKSLASH
+        klee_abort();
+#endif
+        *d++ = '\t';
+        goto standard;
+      case 'u':
+        DISPATCH_ASCII(unicode1);
       default:
         return -1;
     }
