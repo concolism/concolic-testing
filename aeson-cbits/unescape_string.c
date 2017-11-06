@@ -140,13 +140,22 @@ int _js_decode_string(uint16_t *const dest, size_t *destoff,
     *d++ = (uint16_t) unidata;
 
     if (surrogate) {
+#ifdef COVER_UNICODE_SURROGATE
+      klee_abort();
+#endif
       if (unidata < 0xDC00 || unidata > 0xDFFF) // is not low surrogate
         return -1;
       surrogate = 0;
     } else if (unidata >= 0xD800 && unidata <= 0xDBFF ) { // is high surrogate
+#ifdef COVER_UNICODE_NO_SURROGATE
+        klee_abort();
+#endif
         surrogate = 1;
         DISPATCH_ASCII(surrogate1);
     } else if (unidata >= 0xDC00 && unidata <= 0xDFFF) { // is low surrogate
+#ifdef COVER_UNICODE_NO_SURROGATE
+        klee_abort();
+#endif
         return -1;
     }
     goto standard;

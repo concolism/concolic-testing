@@ -12,6 +12,16 @@ BUGS+=-DASCII_SOURCE # Not actually a bug...
 TARGET:=$(TARGET).AS
 endif
 
+ifdef UNICODE_SURROGATE
+BUGS+=-DCOVER_UNICODE_SURROGATE
+TARGET:=$(TARGET).US
+endif
+
+ifdef UNICODE_NO_SURROGATE
+BUGS+=-DCOVER_UNICODE_NO_SURROGATE
+TARGET:=$(TARGET).UNS
+endif
+
 build:
 
 include ../common.mk
