@@ -2,12 +2,14 @@ CC=clang
 GCC=gcc
 KLEE=../klee/bin/klee
 KLEE_LIB=../klee/lib
+DUMMY_KLEE=../misc/dummy_klee.c
 CCOPTS=-Wall -I../klee/include
 CCBUILDOPTS=-g -c -emit-llvm
 GCCCOVOPTS=-fprofile-arcs -ftest-coverage
 
 build: $(TARGET).bc
 cpp: $(TARGET).c-prepro
+manual: $(TARGET).manual
 
 ifndef TIMEOUT
 TIMEOUT=60
@@ -25,6 +27,9 @@ $(TARGET).c-prepro: $(ARTIFACT).c
 
 $(TARGET).replay: $(ARTIFACT).c
 	$(GCC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
+
+$(TARGET).manual: $(ARTIFACT).c $(DUMMY_KLEE)
+	$(GCC) $(CCOPTS) $(DUMMY_KLEE) -DREPLAY -DREPLAY_MANUAL $(BUGS) $< -o $@
 
 $(TARGET).replay-c: $(ARTIFACT).c
 	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DCOVERAGE $(BUGS) $< -o $@ -lkleeRuntest

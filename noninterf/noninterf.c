@@ -264,6 +264,56 @@ void copy_machine(Machine* from, Machine *to) {
   }
 }
 
+#ifdef REPLAY_MANUAL
+void read_machine(Machine* to) {
+  to->pc = 0;
+  to->sp = 0;
+  for (int i = 0; i < MEM_LENGTH; i++) {
+    to->memory[i].tag = L;
+    to->memory[i].value = 0;
+  }
+  char src_[80];
+  char *src = fgets(src_, 80, stdin);
+  for (int i = 0; i < PRG_LENGTH; i++) {
+    Insn *next_insn = &to->insns[i];
+    next_insn->immediate.value = 0;
+    next_insn->immediate.tag = L;
+    switch (*src++) {
+      case 'P':
+        next_insn->t = PUSH;
+        next_insn->immediate.value = (int) (*src++ - '0');
+        next_insn->immediate.tag = (*src++ == 'l') ? L : H;
+        break;
+      case 'Q':
+        next_insn->t = POP;
+        break;
+      case 'L':
+        next_insn->t = LOAD;
+        break;
+      case 'S':
+        next_insn->t = STORE;
+        break;
+      case 'A':
+        next_insn->t = ADD;
+        break;
+      case 'H':
+        next_insn->t = HALT;
+        break;
+      case 'O':
+        next_insn->t = NOOP;
+        break;
+      default:
+        do {
+          to->insns[i].t = NOOP;
+          to->insns[i].immediate.value = 0;
+          to->insns[i].immediate.tag = L;
+        } while (++i < PRG_LENGTH);
+        return;
+    }
+  }
+}
+#endif
+
 int main() {
   Machine machine1, machine1_, machine2;
   MemAtom
@@ -292,6 +342,11 @@ int main() {
   machine2.memory = memory2;
   machine2.stack = stack2;
   machine2.insns = insns2;
+#endif
+
+#ifdef REPLAY_MANUAL
+  read_machine(&machine1);
+  read_machine(&machine2);
 #endif
 
 #ifdef REPLAY
