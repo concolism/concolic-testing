@@ -1,6 +1,10 @@
 *.bc
 *.c-prepro
 *.replay
+*.replay-c
+*.gcda
+*.gcno
+*.gcov
 
 klee-last
 klee-out-*
