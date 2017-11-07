@@ -21,9 +21,8 @@ Here Klee was interrupted after one minute, so some invalid tests were written
 by Klee. 6 tests ended successfully (indistinguishable initial states
 taken to indist. final states).
 
-Next:
-
-- Run Klee for longer.
+Some lines are reported as not covered, but that is most likely because
+stuck states lead to klee_silent_exit which forgets these test cases.
 
 2017-10-26
 ==========
