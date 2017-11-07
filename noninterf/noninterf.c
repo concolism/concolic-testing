@@ -1,5 +1,6 @@
 #include <klee/klee.h>
 #include <limits.h>
+#include <stdlib.h>
 
 #ifdef REPLAY
 #include <stdio.h>
@@ -433,16 +434,25 @@ int main() {
   // machine2_.insns = insns2;
 
   if (run(&machine1) == ERRORED) {
-    klee_silent_exit(0);
+#ifdef REPLAY
+    printf("Machine 1 error\n");
+#endif
+    exit(1);
   }
 
   assume_valid_machine(&machine2);
   if (!indist_machine(&machine1_, &machine2)) {
-    klee_silent_exit(0);
+#ifdef REPLAY
+    printf("Distinguishable initial states\n");
+#endif
+    exit(1);
   }
 
   if (run(&machine2) == ERRORED) {
-    klee_silent_exit(0);
+#ifdef REPLAY
+    printf("Machine 2 error\n");
+#endif
+    exit(1);
   }
 
 #ifdef REPLAY
