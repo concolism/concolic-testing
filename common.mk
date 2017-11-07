@@ -51,6 +51,6 @@ coverage: $(TARGET).replay-c
 	gcov $(ARTIFACT).c
 
 clean:
-	rm -f *.bc *.c-prepro *.replay *.replay-c *.gcov *.gcda *.gcno
+	rm -f *.bc *.c-prepro *.manual *.replay *.replay-c *.gcov *.gcda *.gcno
 
 .PHONY: clean build cpp coverage klee
