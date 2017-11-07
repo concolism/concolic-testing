@@ -41,7 +41,7 @@ coverage: $(TARGET).replay-c
 	@test $(KLEE_OUT) || (echo "make coverage: KLEE_OUT is undefined" ; exit 1)
 	rm -f *.gcda
 	for t in $(KLEE_OUT)/*.ktest ; do \
-	  LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$$t ./$< ; \
+	  LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$$t ./$< || true ; \
 	done
 	gcov $(ARTIFACT).c
 
