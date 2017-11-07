@@ -52,53 +52,111 @@ struct Machine {
 typedef struct Machine Machine;
 
 #ifdef REPLAY
-void print_machine(Machine *machine) {
-  printf("PC: %d\tSP: %d\n", machine->pc, machine->sp);
-  printf("STK: ");
-  for (int i = 0; i < machine->sp; i++) {
-    printf("%d%c",
-        machine->stack[i].value,
-        machine->stack[i].tag == L ? 'L' : 'H');
-    if (i < machine->sp-1)
+void print_int_pair(int x, int y) {
+  if (x == y) {
+    printf("%d", x);
+  } else {
+    printf("[%d/%d]", x, y);
+  }
+}
+
+char tag2char(Tag t) {
+  return t == L ? 'L' : 'H';
+}
+
+void print_tag_pair(Tag t, Tag u) {
+  if (t == u) {
+    printf("%c", tag2char(t));
+  } else {
+    printf("[%c/%c]", tag2char(t), tag2char(u));
+  }
+}
+
+void print_atom_pair(Atom a, Atom b) {
+  print_int_pair(a.value, b.value);
+  print_tag_pair(a.tag, b.tag);
+}
+
+const char *insn_type(InsnType it) {
+  switch (it) {
+    case NOOP:
+      return "NOOP";
+    case PUSH:
+      return "PUSH";
+    case POP:
+      return "POP";
+    case LOAD:
+      return "LOAD";
+    case STORE:
+      return "STORE";
+    case ADD:
+      return "ADD";
+    case HALT:
+      return "HALT";
+    default:
+      return "UNK";
+  }
+}
+
+void print_atom(Atom a) {
+  print_atom_pair(a, a);
+}
+
+void print_insn(Insn i) {
+  printf("%s", insn_type(i.t));
+  if (i.t == PUSH) {
+    printf("(");
+    print_atom(i.immediate);
+    printf(")");
+  }
+}
+
+void print_insn_pair(Insn i, Insn j) {
+  if (i.t == j.t) {
+    printf("%s", insn_type(i.t));
+    if (i.t == PUSH) {
+      printf("(");
+      print_atom_pair(i.immediate, j.immediate);
+      printf(")");
+    }
+  } else {
+    printf("[");
+    print_insn(i);
+    printf("/");
+    print_insn(j);
+    printf("]");
+  }
+}
+
+void print_machine_pair(Machine *m1, Machine *m2) {
+  printf("PC: ");
+  print_int_pair(m1->pc, m2->pc);
+  printf("\tSP: ");
+  print_int_pair(m1->sp, m2->sp);
+  printf("\nSTK: ");
+  int max_sp = m1->sp < m2->sp ? m2->sp : m1->sp;
+  for (int i = 0; i < max_sp; i++) {
+    if (i >= m1->sp) {
+      printf("_/");
+      print_atom(m2->stack[i]);
+    } else if (i >= m2->sp) {
+      print_atom(m1->stack[i]);
+      printf("/_");
+    } else {
+      print_atom_pair(m1->stack[i], m2->stack[i]);
+    }
+    if (i < max_sp-1)
       printf("\t");
   }
-  printf("\n");
-  printf("MEM: ");
+  printf("\nMEM: ");
   for (int i = 0; i < MEM_LENGTH; i++) {
-    printf("%d%c",
-        machine->memory[i].value,
-        machine->memory[i].tag == L ? 'L' : 'H');
+    print_atom_pair(m1->memory[i], m2->memory[i]);
     if (i < MEM_LENGTH-1)
       printf("\t");
   }
-  printf("\n");
-  printf("PRG: ");
+  printf("\nPRG: ");
   for (int i = 0; i < PRG_LENGTH; i++) {
-    Atom immediate;
-    switch (machine->insns[i].t) {
-      case NOOP:
-        printf("NOOP");
-        break;
-      case PUSH:
-        immediate = machine->insns[i].immediate;
-        printf("PUSH(%d%c)", immediate.value, immediate.tag == L ? 'L' : 'H');
-        break;
-      case POP:
-        printf("POP");
-        break;
-      case LOAD:
-        printf("LOAD");
-        break;
-      case STORE:
-        printf("STORE");
-        break;
-      case ADD:
-        printf("ADD");
-        break;
-      case HALT:
-        printf("HALT");
-        break;
-    }
+    print_insn_pair(m1->insns[i], m2->insns[i]);
     if (i == PRG_LENGTH-1)
       printf("\n");
     else
@@ -350,8 +408,8 @@ int main() {
 #endif
 
 #ifdef REPLAY
-  print_machine(&machine1);
-  print_machine(&machine2);
+  printf("*** Initial\n");
+  print_machine_pair(&machine1, &machine2);
 #endif
 
   klee_assume(machine1.pc == 0);
@@ -386,6 +444,11 @@ int main() {
   if (run(&machine2) == ERRORED) {
     klee_silent_exit(0);
   }
+
+#ifdef REPLAY
+  printf("*** Final\n");
+  print_machine_pair(&machine1, &machine2);
+#endif
 
   if (!indist_machine(&machine1, &machine2)) {
     klee_abort();
