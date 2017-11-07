@@ -2,6 +2,7 @@
 *.c-prepro
 *.replay
 *.replay-c
+*.manual
 *.gcda
 *.gcno
 *.gcov
