@@ -289,6 +289,31 @@ int indist_machine(Machine *m1, Machine *m2) {
     return 1;
 }
 
+void assume_indist_atom(Atom a, Atom b) {
+  klee_assume(a.tag == b.tag);
+  if (a.tag == L)
+    klee_assume(a.value == b.value);
+}
+
+void assume_indist_insn(Insn i1, Insn i2) {
+  klee_assume(i1.t == i2.t);
+  assume_indist_atom(i1.immediate, i2.immediate);
+}
+
+void assume_indist_machine(Machine *m1, Machine *m2) {
+    klee_assume(m1->pc == m2->pc);
+    klee_assume(m1->sp == m2->sp);
+    for (int i = 0; i < m1->sp; i++) {
+      assume_indist_atom(m1->stack[i], m2->stack[i]);
+    }
+    for (int i = 0; i < MEM_LENGTH; i++) {
+      assume_indist_atom(m1->memory[i], m2->memory[i]);
+    }
+    for (int i = 0; i < PRG_LENGTH; i++) {
+      assume_indist_insn(m1->insns[i], m2->insns[i]);
+    }
+}
+
 void assume_valid_machine(Machine *machine) {
   // Why can't we use &&
   klee_assume(0 <= machine->pc);
@@ -440,13 +465,8 @@ int main() {
     exit(1);
   }
 
+  assume_indist_machine(&machine1_, &machine2);
   assume_valid_machine(&machine2);
-  if (!indist_machine(&machine1_, &machine2)) {
-#ifdef REPLAY
-    printf("Distinguishable initial states\n");
-#endif
-    exit(1);
-  }
 
   if (run(&machine2) == ERRORED) {
 #ifdef REPLAY
