@@ -49,10 +49,10 @@ In each directory,
   + `TIMEOUT=N` to set a time limit of N seconds (default: `60`);
   + `NOLIMIT` to disable timeouts.
 
-- `make replay` builds an executable (`*.replay`) to replay test cases.
+- `make replay` builds an executable (`$NAME.replay`) to replay test cases.
 
-  To run `*.replay`, add `libKleeRuntest` to the
-  `LD_LIBRARY_PATH`, and set `KTEST_FILE` to a `*.ktest` file.
+  To run `$NAME.replay`, add `libKleeRuntest` to the
+  `LD_LIBRARY_PATH`, and set `KTEST_FILE` to a `test$N.ktest` file.
 
   ```
   LD_LIBRARY_PATH=../klee/lib KTEST_FILE=klee-last/test000001.ktest ./noninterf.replay
@@ -61,16 +61,16 @@ In each directory,
   A shorter way to do that is with
   `make replay TEST_FILE=klee-last/test000001.ktest`.
 
-- `make coverage KLEE_OUT=klee-out-*` collects coverage information in `*.c.gcov`
-  (where `klee-out-*` corresponds to a directory created by `make klee`)
+- `make coverage KLEE_OUT=klee-out-$N` collects coverage information in `$SRC.c.gcov`
+  (where `klee-out-$N` corresponds to a directory created by `make klee`)
 
 These examples have various buggy versions.
 See `Makefile` in each directory for corresponding options.
 
-For example, in `aeson-cbits`, this enables the `BUG_DEST_TOO_LONG`.
+For example, in `aeson-cbits`, this enables the `BUG_DEST_TOO_SMALL`.
 
 ```
-make DEST_TOO_LONG=true klee
+make DEST_TOO_SMALL=true klee
 ```
 
 ### Misc commands
