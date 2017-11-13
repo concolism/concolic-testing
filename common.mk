@@ -19,6 +19,10 @@ ifndef NOLIMIT
 TIMEOUT_OPT:=-max-time $(TIMEOUT)
 endif
 
+ifndef OUTPUT_ALL_STATES
+OUTPUT_STATES:=-only-output-states-covering-new
+endif
+
 $(TARGET).bc: $(ARTIFACT).c
 	$(CC) $(CCOPTS) $(CCBUILDOPTS) $(BUGS) $< -o $@
 
@@ -35,7 +39,7 @@ $(TARGET).replay-c: $(ARTIFACT).c
 	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DCOVERAGE $(BUGS) $< -o $@ -lkleeRuntest
 
 klee: $(TARGET).bc
-	$(KLEE) -only-output-states-covering-new $(TIMEOUT_OPT) $<
+	$(KLEE) $(OUTPUT_STATES) $(TIMEOUT_OPT) $<
 
 replay: $(TARGET).replay
 	@if [[ -f "$(TEST_FILE)" ]] ; then \
