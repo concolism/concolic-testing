@@ -188,7 +188,8 @@ int main(void) {
   // klee_assume(s[1] == 'b');
   // klee_assume(s[2] == 'c');
 
-  _js_decode_string(d, &ofs, s, s+SIZE);
+  if (-1 == _js_decode_string(d, &ofs, s, s+SIZE))
+    return 1;
 
   return 0;
 }
