@@ -36,11 +36,44 @@ static const uint8_t utf8d[] = {
 static inline uint32_t decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
   uint32_t type = utf8d[byte];
 
+#if defined(COVERAGE) || defined(SM_COV_1)
+  // Hack to see state machine coverage
+  switch (type) {
+    case 0: break;
+    case 1: break;
+    case 2: break;
+    case 3: break;
+    case 4: break;
+    case 5: break;
+    case 6: break;
+    case 7: break;
+    case 8: break;
+    case 9: break;
+    case 10: break;
+    case 11: break;
+    default: break;
+  }
+#endif
+
   *codep = (*state != UTF8_ACCEPT) ?
     (byte & 0x3fu) | (*codep << 6) :
     (0xff >> type) & (byte);
 
   *state = utf8d[256 + *state + type];
+
+#if defined(COVERAGE) || defined(SM_COV_2)
+  switch (*state) {
+    case 0: break;
+    case 12: break;
+    case 24: break;
+    case 36: break;
+    case 60: break;
+    case 96: break;
+    case 84: break;
+    default: break;
+  }
+#endif
+
   return *state;
 }
 #endif

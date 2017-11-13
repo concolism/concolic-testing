@@ -17,6 +17,16 @@ BUGS+=-DASCII_SOURCE # Not actually a bug...
 TARGET:=$(TARGET).AS
 endif
 
+ifdef SM_COV_1
+BUGS+=-DSM_COV_1
+TARGET:=$(TARGET).S1
+endif
+
+ifdef SM_COV_2
+BUGS+=-DSM_COV_2
+TARGET:=$(TARGET).S2
+endif
+
 build:
 
 include ../common.mk
