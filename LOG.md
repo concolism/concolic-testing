@@ -1,3 +1,19 @@
+2017-11-13
+==========
+
+aeson
+-----
+
+After extending the length of the input, we finally get 100% coverage!
+Klee also no longer terminates within 5 minutes, suggesting lots more
+different behaviors are possible with two or more hex-encoded characters.
+
+Actually, if we open the state machine a bit, some transitions/states seem to
+be missing.  In particular, transitions 4 and 6 in the first half are missing.
+Transitions 1 and 3 are reached but somehow inputs reaching those are not
+considered as "reaching new states" so they are discarded (unless we ask klee
+to output all states). States 60 and 84 are also missing.
+
 2017-11-06
 ==========
 
