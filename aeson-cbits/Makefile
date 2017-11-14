@@ -27,6 +27,11 @@ BUGS+=-DSM_COV_2
 TARGET:=$(TARGET).S2
 endif
 
+ifdef FLOW_MACHINE
+BUGS+=-DFLOW_MACHINE
+TARGET:=$(TARGET).FM
+endif
+
 build:
 
 include ../common.mk

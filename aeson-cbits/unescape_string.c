@@ -12,6 +12,7 @@
 #define UTF8_REJECT 12
 
 #ifndef ASCII_SOURCE
+#ifndef FLOW_MACHINE
 static const uint8_t utf8d[] = {
   // The first part of the table maps bytes to character classes that
   // to reduce the size of the transition table and create bitmasks.
@@ -32,8 +33,79 @@ static const uint8_t utf8d[] = {
   12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
   12,36,12,12,12,12,12,12,12,12,12,12,
 };
+#endif
 
 static inline uint32_t decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
+#ifdef FLOW_MACHINE
+  // Machine transitions are reflected in the control flow.
+
+  uint32_t type;
+  if (byte < 128) {
+    type = 0;
+  } else if (byte < 144) {
+    type = 1;
+  } else if (byte < 160) {
+    type = 9;
+  } else if (byte < 192) {
+    type = 7;
+  } else if (byte < 194) {
+    type = 8;
+  } else if (byte < 224) {
+    type = 2;
+  } else if (byte < 225) {
+    type = 10;
+  } else if (byte == 237) {
+    type = 4;
+  } else if (byte < 240) {
+    type = 3;
+  } else if (byte < 241) {
+    type = 11;
+  } else if (byte < 244) {
+    type = 6;
+  } else if (byte < 245) {
+    type = 5;
+  } else {
+    type = 8;
+  }
+
+  *codep = (*state != UTF8_ACCEPT) ?
+    (byte & 0x3fu) | (*codep << 6) :
+    (0xff >> type) & (byte);
+
+  type += *state;
+
+  if (type == 0 || type == 25 || type == 31 || type == 33) {
+    *state = 0;
+  } else if (type == 2
+      || type == 37
+      || type == 43
+      || type == 45
+      || type == 55
+      || type == 61
+      || type == 69) {
+    *state = 24;
+  } else if (type == 3
+      || type == 79
+      || type == 81
+      || type == 85
+      || type == 91
+      || type == 93
+      || type == 97) {
+    *state = 36;
+  } else if (type == 4) {
+    *state = 60;
+  } else if (type == 5) {
+    *state = 96;
+  } else if (type == 6) {
+    *state = 84;
+  } else if (type == 10) {
+    *state = 48;
+  } else if (type == 11) {
+    *state = 72;
+  } else {
+    *state = 12;
+  }
+#else
   uint32_t type = utf8d[byte];
 
 #if defined(COVERAGE) || defined(SM_COV_1)
@@ -72,6 +144,7 @@ static inline uint32_t decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
     case 84: break;
     default: break;
   }
+#endif
 #endif
 
   return *state;
