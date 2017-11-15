@@ -273,19 +273,19 @@ int indist_atom(Atom a1, Atom a2) {
 }
 
 int indist_machine(Machine *m1, Machine *m2) {
-    ASSERT(m1->pc == m2->pc);
-    ASSERT(m1->sp == m2->sp);
-    for (int i = 0; i < m1->sp; i++) {
-      ASSERT(indist_atom(m1->stack[i], m2->stack[i]));
-    }
+    //ASSERT(m1->pc == m2->pc);
+    //ASSERT(m1->sp == m2->sp);
+    // for (int i = 0; i < m1->sp; i++) {
+    //   ASSERT(indist_atom(m1->stack[i], m2->stack[i]));
+    // }
     for (int i = 0; i < MEM_LENGTH; i++) {
       ASSERT(indist_atom(m1->memory[i], m2->memory[i]));
     }
-    for (int i = 0; i < PRG_LENGTH; i++) {
-      ASSERT(m1->insns[i].t == m2->insns[i].t);
-      if (m1->insns[i].t == PUSH)
-        ASSERT(indist_atom(m1->insns[i].immediate, m2->insns[i].immediate));
-    }
+    // for (int i = 0; i < PRG_LENGTH; i++) {
+    //   ASSERT(m1->insns[i].t == m2->insns[i].t);
+    //   if (m1->insns[i].t == PUSH)
+    //     ASSERT(indist_atom(m1->insns[i].immediate, m2->insns[i].immediate));
+    // }
     return 1;
 }
 
@@ -316,24 +316,27 @@ void assume_indist_machine(Machine *m1, Machine *m2) {
 
 void assume_valid_machine(Machine *machine) {
   // Why can't we use &&
-  klee_assume(0 <= machine->pc);
-  klee_assume(machine->pc < PRG_LENGTH);
-  klee_assume(0 <= machine->sp);
-  klee_assume(machine->sp < STK_LENGTH);
+  klee_assume(0 == machine->pc);
+  //klee_assume(machine->pc < PRG_LENGTH);
+  klee_assume(0 == machine->sp);
+  //klee_assume(machine->sp < STK_LENGTH);
 
   for (int i = 0 ; i < machine->sp && i < STK_LENGTH ; i++) {
-    klee_assume(machine->stack[i].value >= 0);
-    klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
+    klee_assume(machine->stack[i].value == 0);
+    //klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
+    klee_assume(machine->stack[i].tag == 0);
   }
 
   for (int i = 0 ; i < MEM_LENGTH ; i++) {
-    klee_assume(machine->memory[i].value >= 0);
-    klee_prefer_cex(machine->memory, machine->memory[i].value == 0);
+    klee_assume(machine->memory[i].value == 0);
+    //klee_prefer_cex(machine->memory, machine->memory[i].value == 0);
+    klee_assume(machine->memory[i].tag == L);
   }
 
   for (int i = 0 ; i < PRG_LENGTH ; i++) {
     klee_assume(machine->insns[i].immediate.value >= 0);
-    klee_prefer_cex(machine->insns, machine->insns[i].t == NOOP);
+    //klee_prefer_cex(machine->insns, machine->insns[i].t == NOOP);
+    klee_assume(machine->insns[i].immediate.value < MEM_LENGTH);
   }
 }
 
@@ -438,7 +441,7 @@ int main() {
   print_machine_pair(&machine1, &machine2);
 #endif
 
-  klee_assume(machine1.pc == 0);
+  //klee_assume(machine1.pc == 0);
   klee_assume(machine1.memory == memory1);
   klee_assume(machine1.stack == stack1);
   klee_assume(machine1.insns == insns1);
@@ -447,7 +450,18 @@ int main() {
   klee_assume(machine2.stack == stack2);
   klee_assume(machine2.insns == insns2);
 
+  klee_assume(machine1.insns[0].t == PUSH);
+  // klee_assume(machine1.insns[0].immediate.value == 1);
+  // klee_assume(machine1.insns[0].immediate.tag == L);
+  klee_assume(machine1.insns[1].t == PUSH);
+  // klee_assume(machine1.insns[1].immediate.value == 0);
+  // klee_assume(machine1.insns[1].immediate.tag == H);
+  klee_assume(machine1.insns[2].t == STORE);
+  klee_assume(machine1.insns[3].t == HALT);
+
   assume_valid_machine(&machine1);
+  // assume_valid_machine(&machine2);
+  // assume_indist_machine(&machine1, &machine2);
 
   machine1_.memory = memory1_;
   machine1_.stack = stack1_;
@@ -467,6 +481,7 @@ int main() {
 
   assume_indist_machine(&machine1_, &machine2);
   assume_valid_machine(&machine2);
+  //klee_assume(machine2.insns[1].immediate.value == 1);
 
   if (run(&machine2) == ERRORED) {
 #ifdef REPLAY
@@ -479,9 +494,9 @@ int main() {
   printf("*** Final\n");
   print_machine_pair(&machine1, &machine2);
 #endif
-
+  //klee_stack_trace();
   if (!indist_machine(&machine1, &machine2)) {
-    klee_abort();
+    abort();
   }
 
   return 0;
