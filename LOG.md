@@ -1,3 +1,14 @@
+2017-11-14
+==========
+
+noninterf
+---------
+
+KLEE found one meaningful bug in STORE operation. Key changes that helped:
+- Changed definition of assume_indist_atom to include an (OR) condition which causes splitting during KLEE execution. Before this change, all machines generated had only low-key values.
+- Difference-check introduced to make sure the two initial machines are different.
+- Restricted program length to 4.
+
 2017-11-13
 ==========
 
