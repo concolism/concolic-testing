@@ -7,6 +7,17 @@ BUGS+=-DBUG_ADD_TAG
 TARGET:=$(TARGET).ADD
 endif
 
+ifdef BUG_STORE
+BUGS+=-DBUG_STORE_TAG
+TARGET:=$(TARGET).STORE
+endif
+
+ifdef BUG_STORE_2
+BUGS+=-DBUG_STORE_TAG_2
+TARGET:=$(TARGET).STORE2
+endif
+
+
 build:
 
 include ../common.mk

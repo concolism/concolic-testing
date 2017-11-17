@@ -226,6 +226,14 @@ Outcome step(Machine *machine) {
         return ERRORED;
       }
 #endif
+#ifndef BUG_STORE_TAG
+      data.tag = lub(data.tag, addr->tag);
+#endif
+#ifndef BUG_STORE_TAG_2
+      if (addr->tag > machine->memory[addr->value].tag) {
+        return ERRORED;
+      }
+#endif
       machine->memory[addr->value] = data;
       break;
     case ADD:
@@ -299,7 +307,9 @@ int indist_machine(Machine *m1, Machine *m2) {
 
 void assume_indist_atom(Atom a, Atom b) {
   klee_assume(a.tag == b.tag);
-  klee_assume(a.tag == H || a.value == b.value);
+  if (a.tag == L)
+    klee_assume(a.value == b.value);
+  // klee_assume(a.tag == H || a.value == b.value);
 }
 
 void assume_indist_insn(Insn i1, Insn i2) {
@@ -490,12 +500,12 @@ int main() {
   assume_valid_machine(&machine2);
   //klee_assume(machine2.insns[1].immediate.value == 1);
 
-  if(same_machine_given_indist(&machine1_,&machine2)){
-#ifdef REPLAY
-    printf("Both machines are same\n");
-#endif
-    exit(1);
-  }
+//   if(same_machine_given_indist(&machine1_,&machine2)){
+// #ifdef REPLAY
+//     printf("Both machines are same\n");
+// #endif
+//     exit(1);
+//   }
 
   if (run(&machine2) == ERRORED) {
 #ifdef REPLAY
