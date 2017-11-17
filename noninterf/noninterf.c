@@ -7,7 +7,7 @@
 #endif
 
 #define MEM_LENGTH 5
-#define STK_LENGTH 10
+#define STK_LENGTH 5
 #define PRG_LENGTH 4
 
 enum Tag { L, H };
@@ -335,14 +335,15 @@ void assume_valid_machine(Machine *machine) {
   // Why can't we use &&
   klee_assume(0 == machine->pc);
   //klee_assume(machine->pc < PRG_LENGTH);
-  klee_assume(0 == machine->sp);
-  //klee_assume(machine->sp < STK_LENGTH);
+  klee_assume(0 <= machine->sp);
+  klee_assume(machine->sp < STK_LENGTH);
 
-  // for (int i = 0 ; i < machine->sp && i < STK_LENGTH ; i++) {
-  //   klee_assume(machine->stack[i].value == 0);
-  //   //klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
-  //   klee_assume(machine->stack[i].tag == L);
-  // }
+  for (int i = 0 ; i < machine->sp; i++) {
+    klee_assume(machine->stack[i].value >= 0);
+    //klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
+    //klee_assume(machine->stack[i].tag == L);
+    klee_assume(machine->stack[i].value < MEM_LENGTH);
+  }
 
   for (int i = 0 ; i < MEM_LENGTH ; i++) {
     klee_assume(machine->memory[i].value == 0);
@@ -418,6 +419,14 @@ void read_machine(Machine* to) {
 }
 #endif
 
+int rand1(){
+  static int a = 384234;
+  static int c = 1;
+  static int p = 754751;
+  c = (c*a)%p;
+  return c;
+}
+
 int main() {
   Machine machine1, machine1_, machine2;
   MemAtom
@@ -432,6 +441,20 @@ int main() {
   klee_make_symbolic(&memory1, sizeof memory1, "memory1");
   klee_make_symbolic(&stack1, sizeof stack1, "stack1");
   klee_make_symbolic(&insns1, sizeof insns1, "insns1");
+
+  int msp = rand1()%STK_LENGTH;
+  klee_assume(machine1.sp == msp);
+  for (int i = 0;i < machine1.sp;i++){
+    int tagid = rand1()%2;
+    if(tagid){
+      klee_assume(stack1[i].tag == L);
+    }
+    else{
+      klee_assume(stack1[i].tag == H);
+    }
+    int mp = rand1()%MEM_LENGTH;
+    klee_assume(stack1[i].value == mp);
+  }
 
   klee_make_symbolic(&machine2, sizeof machine2, "machine2");
   klee_make_symbolic(&memory2, sizeof memory2, "memory2");
