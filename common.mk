@@ -42,9 +42,9 @@ klee: $(TARGET).bc
 	$(KLEE) $(OUTPUT_STATES) $(TIMEOUT_OPT) $<
 
 replay: $(TARGET).replay
-	@if [[ -f "$(TEST_FILE)" ]] ; then \
+	@bash -c 'if [[ -f "$(TEST_FILE)" ]] ; then \
 	  LD_LIBRARY_PATH=$(KLEE_LIB) KTEST_FILE=$(TEST_FILE) ./$< ; \
-	fi
+	fi'
 
 coverage: $(TARGET).replay-c
 	@test $(KLEE_OUT) || (echo "make coverage: KLEE_OUT is undefined" ; exit 1)
