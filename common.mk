@@ -39,7 +39,7 @@ $(TARGET).replay-c: $(ARTIFACT).c
 	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DCOVERAGE $(BUGS) $< -o $@ -lkleeRuntest
 
 klee: $(TARGET).bc
-	$(KLEE) $(OUTPUT_STATES) $(TIMEOUT_OPT) $<
+	$(KLEE) $(OUTPUT_STATES) $(TIMEOUT_OPT) $(EXTRA_OPTS) $<
 
 replay: $(TARGET).replay
 	@bash -c 'if [[ -f "$(TEST_FILE)" ]] ; then \
