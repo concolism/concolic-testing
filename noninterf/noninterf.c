@@ -166,6 +166,43 @@ void print_machine_pair(Machine *m1, Machine *m2) {
       printf("\t");
   }
 }
+#ifdef COMPACT
+void print_machine_insns(Machine *m) {
+  int halt = 0;
+  for (int i = 0; i < PRG_LENGTH && !halt; i++) {
+    char c;
+    switch (m->insns[i].t) {
+      case PUSH:
+        c = 'P';
+        break;
+      case POP:
+        c = 'Q';
+        break;
+      case LOAD:
+        c = 'L';
+        break;
+      case STORE:
+        c = 'S';
+        break;
+      case ADD:
+        c = 'A';
+        break;
+      case HALT:
+        c = 'H';
+        halt = 1;
+        break;
+      case NOOP:
+        c = 'O';
+        break;
+      default:
+        c = 'U';
+        halt = 1;
+    }
+    putchar(c);
+  }
+  putchar('\n');
+}
+#endif
 #endif
 
 enum Outcome {
@@ -493,8 +530,13 @@ int main() {
 #endif
 
 #ifdef REPLAY
+#ifndef COMPACT
   printf("*** Initial\n");
   print_machine_pair(&machine1, &machine2);
+#else
+  print_machine_insns(&machine1);
+  return 0;
+#endif
 #endif
 
   //klee_assume(machine1.pc == 0);
