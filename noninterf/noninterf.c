@@ -363,7 +363,9 @@ void assume_indist_atom(Atom a, Atom b) {
 
 void assume_indist_insn(Insn i1, Insn i2) {
   klee_assume(i1.t == i2.t);
-  assume_indist_atom(i1.immediate, i2.immediate);
+  if (i1.t == PUSH) {
+    assume_indist_atom(i1.immediate, i2.immediate);
+  }
 }
 
 void assume_indist_machine(Machine *m1, Machine *m2) {
@@ -380,6 +382,11 @@ void assume_indist_machine(Machine *m1, Machine *m2) {
     }
 }
 
+void assume_bounded_tag(Atom a) {
+  klee_assume(L <= a.tag);
+  klee_assume(a.tag <= H);
+}
+
 void assume_valid_machine(Machine *machine) {
   // Why can't we use &&
   klee_assume(0 == machine->pc);
@@ -388,6 +395,7 @@ void assume_valid_machine(Machine *machine) {
   klee_assume(machine->sp < STK_LENGTH);
 
   for (int i = 0 ; i < machine->sp; i++) {
+    assume_bounded_tag(machine->stack[i]);
     klee_assume(machine->stack[i].value >= 0);
     //klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
     //klee_assume(machine->stack[i].tag == L);
@@ -395,12 +403,14 @@ void assume_valid_machine(Machine *machine) {
   }
 
   for (int i = 0 ; i < MEM_LENGTH ; i++) {
+    assume_bounded_tag(machine->memory[i]);
     klee_assume(machine->memory[i].value == 0);
     //klee_prefer_cex(machine->memory, machine->memory[i].value == 0);
     klee_assume(machine->memory[i].tag == L);
   }
 
   for (int i = 0 ; i < PRG_LENGTH ; i++) {
+    assume_bounded_tag(machine->insns[i].immediate);
     klee_assume(machine->insns[i].immediate.value >= 0);
     //klee_prefer_cex(machine->insns, machine->insns[i].t == NOOP);
     klee_assume(machine->insns[i].immediate.value < MEM_LENGTH);
