@@ -16,7 +16,14 @@ enum Tag { L, H };
 typedef enum Tag Tag;
 
 Tag lub(Tag t1, Tag t2) {
-  return (t1 == L && t2 == L) ? L : H;
+#ifdef BRANCHFREE_TAG
+  return (t1 | t2);
+#else
+  if (t1 == L && t2 == L)
+    return L;
+  else
+    return H;
+#endif
 }
 
 enum InsnType {
@@ -320,13 +327,24 @@ Outcome run(Machine *machine) {
   return step(machine);
 }
 
+#ifdef BRANCHFREE_CHECK
+int indist_machine(Machine *m1, Machine *m2) {
+  int indist = 1;
+  for (int i = 0; i < MEM_LENGTH; i++) {
+    indist &= (a1.tag == H) | (a1.value == a2.value);
+  }
+  return indist;
+}
+#else
 #define ASSERT(x) if (!(x)) { return 0; }
 
 int indist_atom(Atom a1, Atom a2) {
   ASSERT(a1.tag == a2.tag);
-  if (a1.tag == L)
-    ASSERT(a1.value == a2.value);
-  return 1;
+#ifdef BRANCHFREE_TAG
+  return (a1.tag == H) | (a1.value == a2.value);
+#else
+  return a1.tag == H || a1.value == a2.value;
+#endif
 }
 
 int same_machine_given_indist(Machine *m1, Machine *m2) {
@@ -353,11 +371,17 @@ int indist_machine(Machine *m1, Machine *m2) {
     // }
     return 1;
 }
+#endif
 
 void assume_indist_atom(Atom a, Atom b) {
   klee_assume(a.tag == b.tag);
-  if (a.tag == L)
+#ifdef BRANCHFREE_TAG
+  klee_assume((a.tag == H) | (a.value == b.value));
+#else
+  if (a.tag == L) {
     klee_assume(a.value == b.value);
+  }
+#endif
   // klee_assume(a.tag == H || a.value == b.value);
 }
 
