@@ -219,8 +219,8 @@ Outcome step(Machine *machine) {
         return ERRORED;
       }
 #endif
-      addr = &machine->stack[--machine->sp];
-      Atom data = machine->stack[--machine->sp];
+      addr = &machine->stack[machine->sp-1];
+      Atom data = machine->stack[machine->sp-2];
 #ifndef BUG_STORE_OOB
       if (addr->value >= MEM_LENGTH) {
         return ERRORED;
@@ -235,6 +235,7 @@ Outcome step(Machine *machine) {
       }
 #endif
       machine->memory[addr->value] = data;
+      machine->sp -= 2;
       break;
     case ADD:
 #ifndef BUG_ADD_UNDERFLOW
@@ -242,8 +243,8 @@ Outcome step(Machine *machine) {
         return ERRORED;
       }
 #endif
-      Atom data1 = machine->stack[--machine->sp];
-      Atom data2 = machine->stack[--machine->sp];
+      Atom data1 = machine->stack[machine->sp-1];
+      Atom data2 = machine->stack[machine->sp-2];
 #ifndef BUG_ADD_INT_OVERFLOW
       if (data1.value > INT_MAX - data2.value) {
         return ERRORED;
@@ -254,10 +255,13 @@ Outcome step(Machine *machine) {
 #else
       Atom data3 = {lub(data1.tag, data2.tag), data1.value + data2.value};
 #endif
-      machine->stack[machine->sp++] = data3;
+      machine->stack[machine->sp-2] = data3;
+      machine->sp--;
       break;
     case HALT:
       return HALTED;
+    default:
+      return ERRORED;
   }
 
   machine->pc++;
