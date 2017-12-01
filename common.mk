@@ -23,7 +23,9 @@ ifndef OUTPUT_ALL_STATES
 OUTPUT_STATES:=-only-output-states-covering-new
 endif
 
-$(TARGET).bc: $(ARTIFACT).c
+.PHONY: buildanyway
+
+$(TARGET).bc: $(ARTIFACT).c buildanyway
 	$(CC) $(CCOPTS) $(CCBUILDOPTS) $(CC_EXTRA_OPTS) $(BUGS) $< -o $@
 
 $(TARGET).c-prepro: $(ARTIFACT).c
