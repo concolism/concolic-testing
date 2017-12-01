@@ -8,7 +8,9 @@
 
 #define MEM_LENGTH 5
 #define STK_LENGTH 5
+#ifndef PRG_LENGTH
 #define PRG_LENGTH 4
+#endif
 
 enum Tag { L, H };
 typedef enum Tag Tag;
