@@ -24,13 +24,13 @@ OUTPUT_STATES:=-only-output-states-covering-new
 endif
 
 $(TARGET).bc: $(ARTIFACT).c
-	$(CC) $(CCOPTS) $(CCBUILDOPTS) $(BUGS) $< -o $@
+	$(CC) $(CCOPTS) $(CCBUILDOPTS) $(CC_EXTRA_OPTS) $(BUGS) $< -o $@
 
 $(TARGET).c-prepro: $(ARTIFACT).c
 	$(CC) $(CCOPTS) -E $(BUGS) $< -o $@
 
 $(TARGET).replay: $(ARTIFACT).c
-	$(GCC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(BUGS) $< -o $@ -lkleeRuntest
+	$(GCC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(REPLAY_OPTS) $(CC_EXTRA_OPTS) $(BUGS) $< -o $@ -lkleeRuntest
 
 $(TARGET).manual: $(ARTIFACT).c $(DUMMY_KLEE)
 	$(GCC) $(CCOPTS) $(DUMMY_KLEE) -DREPLAY -DREPLAY_MANUAL $(BUGS) $< -o $@
