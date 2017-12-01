@@ -635,7 +635,7 @@ int main() {
 #endif
   //klee_stack_trace();
   if (!indist_machine(&machine1, &machine2)) {
-    abort();
+    klee_abort();
   }
 
   return 0;
