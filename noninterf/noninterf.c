@@ -415,6 +415,7 @@ void assume_valid_machine(Machine *machine) {
   // Why can't we use &&
   klee_assume(0 == machine->pc);
   //klee_assume(machine->pc < PRG_LENGTH);
+#ifndef EMPTY_STACK
   klee_assume(0 <= machine->sp);
   klee_assume(machine->sp < STK_LENGTH);
 
@@ -425,13 +426,18 @@ void assume_valid_machine(Machine *machine) {
     //klee_assume(machine->stack[i].tag == L);
     klee_assume(machine->stack[i].value < MEM_LENGTH);
   }
+#else
+  klee_assume(0 == machine->sp);
+#endif
 
+#ifndef ZERO_MEMORY
   for (int i = 0 ; i < MEM_LENGTH ; i++) {
     assume_bounded_tag(machine->memory[i]);
     klee_assume(machine->memory[i].value == 0);
     //klee_prefer_cex(machine->memory, machine->memory[i].value == 0);
     klee_assume(machine->memory[i].tag == L);
   }
+#endif
 
   for (int i = 0 ; i < PRG_LENGTH ; i++) {
     assume_bounded_tag(machine->insns[i].immediate);
@@ -522,9 +528,22 @@ int main() {
     stack2[STK_LENGTH];
   Insn insns1[PRG_LENGTH], insns2[PRG_LENGTH];
 
+#ifdef ZERO_MEMORY
+  for (int i = 0; i < MEM_LENGTH; i++) {
+    memory1[i].tag = L;
+    memory1[i].value = 0;
+    memory2[i].tag = L;
+    memory2[i].value = 0;
+  }
+#endif
+
   klee_make_symbolic(&machine1, sizeof machine1, "machine1");
+#ifndef ZERO_MEMORY
   klee_make_symbolic(&memory1, sizeof memory1, "memory1");
+#endif
+#ifndef EMPTY_STACK
   klee_make_symbolic(&stack1, sizeof stack1, "stack1");
+#endif
   klee_make_symbolic(&insns1, sizeof insns1, "insns1");
 
 #ifdef RANDOMIZE
@@ -544,8 +563,12 @@ int main() {
 #endif
 
   klee_make_symbolic(&machine2, sizeof machine2, "machine2");
+#ifndef ZERO_MEMORY
   klee_make_symbolic(&memory2, sizeof memory2, "memory2");
+#endif
+#ifndef EMPTY_STACK
   klee_make_symbolic(&stack2, sizeof stack2, "stack2");
+#endif
   klee_make_symbolic(&insns2, sizeof insns2, "insns2");
 
 #if defined(REPLAY) || defined(COVERAGE)
