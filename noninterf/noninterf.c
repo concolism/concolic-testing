@@ -423,6 +423,7 @@ void read_machine(Machine* to) {
 }
 #endif
 
+#ifdef RANDOMIZE
 int rand1(){
   static int a = 384234;
   static int c = 1;
@@ -430,6 +431,7 @@ int rand1(){
   c = (c*a)%p;
   return c;
 }
+#endif
 
 int main() {
   Machine machine1, machine1_, machine2;
@@ -446,6 +448,7 @@ int main() {
   klee_make_symbolic(&stack1, sizeof stack1, "stack1");
   klee_make_symbolic(&insns1, sizeof insns1, "insns1");
 
+#ifdef RANDOMIZE
   int msp = rand1()%STK_LENGTH;
   klee_assume(machine1.sp == msp);
   for (int i = 0;i < machine1.sp;i++){
@@ -459,6 +462,7 @@ int main() {
     int mp = rand1()%MEM_LENGTH;
     klee_assume(stack1[i].value == mp);
   }
+#endif
 
   klee_make_symbolic(&machine2, sizeof machine2, "machine2");
   klee_make_symbolic(&memory2, sizeof memory2, "memory2");
