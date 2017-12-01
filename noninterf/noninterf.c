@@ -206,12 +206,18 @@ Outcome step(Machine *machine) {
       }
 #endif
       Atom *addr = &machine->stack[machine->sp-1];
+#ifndef BUG_LOAD_TAG
+      Tag t = addr->tag;
+#endif
 #ifndef BUG_LOAD_OOB
       if (addr->value >= MEM_LENGTH) {
         return ERRORED;
       }
 #endif
       *addr = machine->memory[addr->value];
+#ifndef BUG_LOAD_TAG
+      addr->tag = lub(t, addr->tag);
+#endif
       break;
     case STORE:
 #ifndef BUG_STORE_UNDERFLOW
