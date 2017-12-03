@@ -29,16 +29,16 @@ $(TARGET).bc: $(ARTIFACT).c buildanyway
 	$(CC) $(CCOPTS) $(CCBUILDOPTS) $(CC_EXTRA_OPTS) $(BUGS) $< -o $@
 
 $(TARGET).c-prepro: $(ARTIFACT).c
-	$(CC) $(CCOPTS) -E $(BUGS) $< -o $@
+	$(CC) $(CCOPTS) $(CC_EXTRA_OPTS) -E $(BUGS) $< -o $@
 
 $(TARGET).replay: $(ARTIFACT).c
 	$(GCC) $(CCOPTS) -L$(KLEE_LIB) -DREPLAY $(REPLAY_OPTS) $(CC_EXTRA_OPTS) $(BUGS) $< -o $@ -lkleeRuntest
 
 $(TARGET).manual: $(ARTIFACT).c $(DUMMY_KLEE)
-	$(GCC) $(CCOPTS) $(DUMMY_KLEE) -DREPLAY -DREPLAY_MANUAL $(BUGS) $< -o $@
+	$(GCC) $(CCOPTS) $(DUMMY_KLEE) -DREPLAY -DREPLAY_MANUAL $(CC_EXTRA_OPTS) $(BUGS) $< -o $@
 
 $(TARGET).replay-c: $(ARTIFACT).c
-	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DCOVERAGE $(BUGS) $< -o $@ -lkleeRuntest
+	$(GCC) $(CCOPTS) $(GCCCOVOPTS) -L$(KLEE_LIB) -DCOVERAGE $(CC_EXTRA_OPTS) $(BUGS) $< -o $@ -lkleeRuntest
 
 klee: $(TARGET).bc
 	$(KLEE) $(OUTPUT_STATES) $(TIMEOUT_OPT) $(EXTRA_OPTS) $<
