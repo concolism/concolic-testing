@@ -339,11 +339,11 @@ int indist_machine(Machine *m1, Machine *m2) {
 #define ASSERT(x) if (!(x)) { return 0; }
 
 int indist_atom(Atom a1, Atom a2) {
-  ASSERT(a1.tag == a2.tag);
 #ifdef BRANCHFREE_TAG
-  return (a1.tag == H) | (a1.value == a2.value);
+  return (a1.tag == a2.tag) & ((a1.tag != L) | (a1.value == a2.value));
 #else
-  return a1.tag == H || a1.value == a2.value;
+  ASSERT(a1.tag == a2.tag);
+  return a1.tag != L || a1.value == a2.value;
 #endif
 }
 
