@@ -631,7 +631,7 @@ int main() {
 #ifdef REPLAY
     printf("Machine 1 error\n");
 #endif
-    exit(1);
+    klee_silent_exit(1);
   }
 
   assume_indist_machine(&machine1_, &machine2);
@@ -649,7 +649,7 @@ int main() {
 #ifdef REPLAY
     printf("Machine 2 error\n");
 #endif
-    exit(1);
+    klee_silent_exit(1);
   }
 
 #ifdef REPLAY
