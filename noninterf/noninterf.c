@@ -444,7 +444,7 @@ void assume_valid_machine(Machine *machine) {
   klee_assume(machine->sp < STK_LENGTH);
 
   for (int i = 0 ; i < machine->sp; i++) {
-    assume_bounded_tag(machine->stack[i]);
+    assume_bounded_tag(machine->stack[i].tag);
     klee_assume(machine->stack[i].value >= 0);
     // klee_assume(machine->stack[i].value < MEM_LENGTH);
     // klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
