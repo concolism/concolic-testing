@@ -770,14 +770,16 @@ enum TestOutcome run_test() {
     return DISCARD;
   }
 
+  /*
   printf("Initial\n");
   print_machine_pair(&machine1_,&machine2_);
   printf("Final\n");
   print_machine_pair(&machine1,&machine2);
   printf("\n");
+  */
 
   if (!indist_machine(&machine1, &machine2)) {
-    printf("**************BUG***************\n");
+    // printf("**************BUG***************\n");
     return FAILURE;
   }
 
@@ -795,9 +797,22 @@ int main(int argc, char *argv[]) {
   ASSERT(argc >= 2);
   ASSERT(1 == sscanf(argv[1], "%d", &runs));
   srand(44);
+  int good = 0, bad = 0, ugly = 0;
   for (int i = 0; i < runs; i++) {
-    run_test();
+    switch (run_test()) {
+      case SUCCESS:
+        good++;
+        break;
+      case FAILURE:
+        bad++;
+        break;
+      case DISCARD:
+      default:
+        ugly++;
+        break;
+    }
   }
+  printf("%d %d %d\n", good, bad, ugly);
   return 0;
 #undef ASSERT
 }
