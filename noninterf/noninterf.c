@@ -406,9 +406,14 @@ void assume_indist_machine(Machine *m1, Machine *m2) {
     }
 }
 
-void assume_bounded_tag(Atom a) {
-  klee_assume(L <= a.tag);
-  klee_assume(a.tag <= H);
+void assume_bounded_tag(Tag tag) {
+  klee_assume(L <= tag);
+  klee_assume(tag <= H);
+}
+
+void assume_bounded_insn(InsnType t) {
+  klee_assume(NOOP <= t);
+  klee_assume(t <= HALT);
 }
 
 void assume_valid_machine(Machine *machine) {
@@ -422,9 +427,9 @@ void assume_valid_machine(Machine *machine) {
   for (int i = 0 ; i < machine->sp; i++) {
     assume_bounded_tag(machine->stack[i]);
     klee_assume(machine->stack[i].value >= 0);
-    //klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
-    //klee_assume(machine->stack[i].tag == L);
-    klee_assume(machine->stack[i].value < MEM_LENGTH);
+    // klee_assume(machine->stack[i].value < MEM_LENGTH);
+    // klee_prefer_cex(machine->stack, machine->stack[i].value == 0);
+    // klee_assume(machine->stack[i].tag == L);
   }
 #else
   klee_assume(0 == machine->sp);
@@ -432,18 +437,19 @@ void assume_valid_machine(Machine *machine) {
 
 #ifndef ZERO_MEMORY
   for (int i = 0 ; i < MEM_LENGTH ; i++) {
-    assume_bounded_tag(machine->memory[i]);
-    klee_assume(machine->memory[i].value == 0);
-    //klee_prefer_cex(machine->memory, machine->memory[i].value == 0);
-    klee_assume(machine->memory[i].tag == L);
+    assume_bounded_tag(machine->memory[i].tag);
+    klee_assume(machine->memory[i].value >= 0);
+    // klee_prefer_cex(machine->memory, machine->memory[i].value == 0);
+    // klee_assume(machine->memory[i].tag == L);
   }
 #endif
 
   for (int i = 0 ; i < PRG_LENGTH ; i++) {
-    assume_bounded_tag(machine->insns[i].immediate);
+    assume_bounded_tag(machine->insns[i].immediate.tag);
+    assume_bounded_insn(machine->insns[i].t);
     klee_assume(machine->insns[i].immediate.value >= 0);
-    //klee_prefer_cex(machine->insns, machine->insns[i].t == NOOP);
-    klee_assume(machine->insns[i].immediate.value < MEM_LENGTH);
+    // klee_prefer_cex(machine->insns, machine->insns[i].t == NOOP);
+    // klee_assume(machine->insns[i].immediate.value < MEM_LENGTH);
   }
 }
 
