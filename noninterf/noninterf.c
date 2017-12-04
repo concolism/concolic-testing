@@ -680,33 +680,44 @@ int main() {
 
 #else  // ifdef RANDOM
 
-void init_memories(MemAtom *memory1, MemAtom *memory2) {
-  for (int i = 0; i < MEM_LENGTH; i++) {
-      memory1[i].tag = L;
-      memory1[i].value = 0;
-      memory2[i].tag = L;
-      memory2[i].value = 0;
-  }
+int random_value() {
+  // return rand();
+  return rand()%MEM_LENGTH;
 }
 
 void random_atoms(Atom *a1, Atom *a2) {
   int tagid = rand()%2;
   if(tagid){
     a1->tag = a2->tag = L;
-    a1->value = a2->value = rand()%MEM_LENGTH;
+    a1->value = a2->value = random_value();
   }
   else{
     a1->tag = a2->tag = H;
-    a1->value = rand()%MEM_LENGTH;
-    a2->value = rand()%MEM_LENGTH;
+    a1->value = random_value();
+    a2->value = random_value();
+  }
+}
+
+void init_memories(MemAtom *memory1, MemAtom *memory2) {
+  for (int i = 0; i < MEM_LENGTH; i++) {
+#ifdef ZERO_MEMORY
+    const Atom zero = {L, 0};
+    memory1[i] = memory2[i] = zero;
+#else
+    random_atoms(&memory1[i], &memory2[i]);
+#endif
   }
 }
 
 void init_stacks(int *sp1, StkAtom *stack1, int *sp2, StkAtom *stack2) {
+#ifdef EMPTY_STACK
+  *sp1 = *sp2 = 0;
+#else
   int sp = *sp1 = *sp2 = rand()%STK_LENGTH;
   for (int i = 0; i < sp; i++){
     random_atoms(&stack1[i], &stack2[i]);
   }
+#endif
 }
 
 void init_insns(Insn *insns1, Insn *insns2) {
