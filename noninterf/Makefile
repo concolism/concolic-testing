@@ -30,3 +30,8 @@ endif
 build:
 
 include ../common.mk
+
+random: $(TARGET).rand
+
+$(TARGET).rand: $(ARTIFACT).c buildanyway
+	$(CC) -Wall -DRANDOM $(CC_EXTRA_OPTS) $(BUGS) $< -o $@

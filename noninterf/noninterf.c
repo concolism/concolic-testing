@@ -1,13 +1,19 @@
+#ifndef RANDOM
 #include <klee/klee.h>
+#endif
 #include <limits.h>
 #include <stdlib.h>
 
-#ifdef REPLAY
+#if defined(REPLAY) || defined(RANDOM)
 #include <stdio.h>
 #endif
 
+#ifndef MEM_LENGTH
 #define MEM_LENGTH 5
+#endif
+#ifndef STK_LENGTH
 #define STK_LENGTH 5
+#endif
 #ifndef PRG_LENGTH
 #define PRG_LENGTH 4
 #endif
@@ -61,7 +67,7 @@ struct Machine {
 };
 typedef struct Machine Machine;
 
-#ifdef REPLAY
+#if defined(REPLAY) || defined(RANDOM)
 void print_int_pair(int x, int y) {
   if (x == y) {
     printf("%d", x);
@@ -327,6 +333,17 @@ Outcome run(Machine *machine) {
   return step(machine);
 }
 
+void copy_machine(Machine* from, Machine *to) {
+  to->pc = from->pc;
+  to->sp = from->sp;
+  for (int i = 0; i < from->sp; i++) {
+    to->stack[i] = from->stack[i];
+  }
+  for (int i = 0; i < MEM_LENGTH; i++) {
+    to->memory[i] = from->memory[i];
+  }
+}
+
 #ifdef BRANCHFREE_CHECK
 int indist_machine(Machine *m1, Machine *m2) {
   int indist = 1;
@@ -371,8 +388,10 @@ int indist_machine(Machine *m1, Machine *m2) {
     // }
     return 1;
 }
+#undef ASSERT
 #endif
 
+#ifndef RANDOM
 void assume_indist_atom(Atom a, Atom b) {
   klee_assume(a.tag == b.tag);
 #ifdef BRANCHFREE_TAG
@@ -450,17 +469,6 @@ void assume_valid_machine(Machine *machine) {
     klee_assume(machine->insns[i].immediate.value >= 0);
     // klee_prefer_cex(machine->insns, machine->insns[i].t == NOOP);
     // klee_assume(machine->insns[i].immediate.value < MEM_LENGTH);
-  }
-}
-
-void copy_machine(Machine* from, Machine *to) {
-  to->pc = from->pc;
-  to->sp = from->sp;
-  for (int i = 0; i < from->sp; i++) {
-    to->stack[i] = from->stack[i];
-  }
-  for (int i = 0; i < MEM_LENGTH; i++) {
-    to->memory[i] = from->memory[i];
   }
 }
 
@@ -669,3 +677,117 @@ int main() {
 
   return 0;
 }
+
+#else  // ifdef RANDOM
+
+void init_memories(MemAtom *memory1, MemAtom *memory2) {
+  for (int i = 0; i < MEM_LENGTH; i++) {
+      memory1[i].tag = L;
+      memory1[i].value = 0;
+      memory2[i].tag = L;
+      memory2[i].value = 0;
+  }
+}
+
+void random_atoms(Atom *a1, Atom *a2) {
+  int tagid = rand()%2;
+  if(tagid){
+    a1->tag = a2->tag = L;
+    a1->value = a2->value = rand()%MEM_LENGTH;
+  }
+  else{
+    a1->tag = a2->tag = H;
+    a1->value = rand()%MEM_LENGTH;
+    a2->value = rand()%MEM_LENGTH;
+  }
+}
+
+void init_stacks(int *sp1, StkAtom *stack1, int *sp2, StkAtom *stack2) {
+  int sp = *sp1 = *sp2 = rand()%STK_LENGTH;
+  for (int i = 0; i < sp; i++){
+    random_atoms(&stack1[i], &stack2[i]);
+  }
+}
+
+void init_insns(Insn *insns1, Insn *insns2) {
+  for (int i = 0;i < PRG_LENGTH;i++){
+    InsnType ins = (InsnType) (rand()%7);
+    insns1[i].t = insns2[i].t = ins;
+    if (insns1[i].t == PUSH) {
+      random_atoms(&insns1[i].immediate, &insns2[i].immediate);
+    }
+  }
+}
+
+enum TestOutcome { SUCCESS, FAILURE, DISCARD };
+
+enum TestOutcome run_test() {
+  Machine machine1, machine1_, machine2,machine2_;
+  MemAtom
+    memory1[MEM_LENGTH], memory1_[MEM_LENGTH],
+    memory2[MEM_LENGTH], memory2_[MEM_LENGTH];
+  StkAtom
+    stack1[STK_LENGTH], stack1_[STK_LENGTH],
+    stack2[STK_LENGTH], stack2_[STK_LENGTH];
+  Insn insns1[PRG_LENGTH], insns2[PRG_LENGTH];
+
+  machine1.pc = 0;
+  machine1.memory = memory1;
+  machine1.stack = stack1;
+  machine1.insns = insns1;
+
+  machine2.pc = 0;
+  machine2.memory = memory2;
+  machine2.stack = stack2;
+  machine2.insns = insns2;
+
+  init_memories(memory1, memory2);
+  init_stacks(&machine1.sp, stack1, &machine2.sp, stack2);
+  init_insns(insns1, insns2);
+
+  machine1_.memory = memory1_;
+  machine1_.stack = stack1_;
+  machine1_.insns = insns1;
+  copy_machine(&machine1, &machine1_);
+
+  machine2_.memory = memory2_;
+  machine2_.stack = stack2_;
+  machine2_.insns = insns2;
+  copy_machine(&machine2, &machine2_);
+
+  if (run(&machine1) == ERRORED || run(&machine2) == ERRORED) {
+    return DISCARD;
+  }
+
+  printf("Initial\n");
+  print_machine_pair(&machine1_,&machine2_);
+  printf("Final\n");
+  print_machine_pair(&machine1,&machine2);
+  printf("\n");
+
+  if (!indist_machine(&machine1, &machine2)) {
+    printf("**************BUG***************\n");
+    return FAILURE;
+  }
+
+  return SUCCESS;
+}
+
+void usage(char *name) {
+  fprintf(stderr, "Usage: %s [NUM RUNS]\n", name);
+}
+
+int main(int argc, char *argv[]) {
+#define ASSERT(x) if(!(x)) { usage(argv[0]); return 1; }
+
+  int runs;
+  ASSERT(argc >= 2);
+  ASSERT(1 == sscanf(argv[1], "%d", &runs));
+  srand(44);
+  for (int i = 0; i < runs; i++) {
+    run_test();
+  }
+  return 0;
+#undef ASSERT
+}
+#endif
